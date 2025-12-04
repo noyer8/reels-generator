@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: noyer-reels-generator
+    env: docker
+    plan: starter # $7/mois - suffisant pour commencer
+    healthCheckPath: /health
+    envVars:
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: R2_PUBLIC_URL
+        sync: false
+      - key: PORT
+        value: 3000
