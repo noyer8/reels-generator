@@ -1,6 +1,0 @@
-node_modules/
-.env
-build/
-*.mp4
-*.log
-.DS_Store
