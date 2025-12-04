@@ -17,22 +17,61 @@ const COLORS = {
 };
 
 // ============================================
-// EFFET KEN BURNS
+// EFFET KEN BURNS AMÉLIORÉ
 // ============================================
 const KenBurnsImage = ({ src, direction = 'in', style = {} }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
 
-  // Différentes directions pour l'effet Ken Burns
+  // Différentes directions pour l'effet Ken Burns - PLUS DYNAMIQUES
   const directions = {
-    in: { startScale: 1, endScale: 1.15, startX: 0, endX: 0, startY: 0, endY: 0 },
-    out: { startScale: 1.15, endScale: 1, startX: 0, endX: 0, startY: 0, endY: 0 },
-    left: { startScale: 1.1, endScale: 1.1, startX: 5, endX: -5, startY: 0, endY: 0 },
-    right: { startScale: 1.1, endScale: 1.1, startX: -5, endX: 5, startY: 0, endY: 0 },
-    upLeft: { startScale: 1, endScale: 1.2, startX: 3, endX: -3, startY: 3, endY: -3 },
+    // Scène 1 : Mouvement diagonal + zoom (effet caméra sur place)
+    diagonal: { 
+      startScale: 1.2, 
+      endScale: 1.35, 
+      startX: -8, 
+      endX: 8, 
+      startY: -5, 
+      endY: 5 
+    },
+    // Scène 2 : Rotation panoramique rapide
+    panoramic: { 
+      startScale: 1.3, 
+      endScale: 1.3, 
+      startX: -15, 
+      endX: 15, 
+      startY: 0, 
+      endY: 0 
+    },
+    // Pour les splits
+    slowZoom: { 
+      startScale: 1.1, 
+      endScale: 1.25, 
+      startX: -3, 
+      endX: 3, 
+      startY: 0, 
+      endY: 0 
+    },
+    slowZoomReverse: { 
+      startScale: 1.25, 
+      endScale: 1.1, 
+      startX: 3, 
+      endX: -3, 
+      startY: 0, 
+      endY: 0 
+    },
+    // Scène 4 : Zoom out doux
+    out: { 
+      startScale: 1.3, 
+      endScale: 1.1, 
+      startX: 5, 
+      endX: -5, 
+      startY: 3, 
+      endY: -3 
+    },
   };
 
-  const d = directions[direction] || directions.in;
+  const d = directions[direction] || directions.diagonal;
 
   const scale = interpolate(frame, [0, durationInFrames], [d.startScale, d.endScale], {
     extrapolateRight: 'clamp',
@@ -64,9 +103,9 @@ const KenBurnsImage = ({ src, direction = 'in', style = {} }) => {
 };
 
 // ============================================
-// CARTES D'INFORMATION ANIMÉES
+// CARTES D'INFORMATION ANIMÉES - STYLE UNIFIÉ ET PLUS GRANDES
 // ============================================
-const InfoCard = ({ children, delay = 0, position = 'bottom-left', style = {} }) => {
+const InfoCard = ({ children, delay = 0, position = 'bottom-left' }) => {
   const frame = useCurrentFrame();
 
   const opacity = interpolate(frame, [delay, delay + 15], [0, 1], {
@@ -74,18 +113,17 @@ const InfoCard = ({ children, delay = 0, position = 'bottom-left', style = {} })
     extrapolateRight: 'clamp',
   });
 
-  const translateY = interpolate(frame, [delay, delay + 15], [30, 0], {
+  const translateY = interpolate(frame, [delay, delay + 15], [40, 0], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
   const positions = {
-    'bottom-left': { bottom: 180, left: 40 },
-    'bottom-right': { bottom: 180, right: 40 },
-    'top-left': { top: 120, left: 40 },
-    'top-right': { top: 120, right: 40 },
-    'center': { top: '50%', left: '50%', transform: `translate(-50%, -50%) translateY(${translateY}px)` },
-    'bottom-center': { bottom: 180, left: '50%', transform: `translateX(-50%) translateY(${translateY}px)` },
+    'bottom-left': { bottom: 200, left: 50 },
+    'bottom-right': { bottom: 200, right: 50 },
+    'top-left': { top: 150, left: 50 },
+    'top-right': { top: 150, right: 50 },
+    'bottom-center': { bottom: 200, left: '50%', marginLeft: -200 },
   };
 
   const posStyle = positions[position] || positions['bottom-left'];
@@ -96,12 +134,13 @@ const InfoCard = ({ children, delay = 0, position = 'bottom-left', style = {} })
         position: 'absolute',
         ...posStyle,
         opacity,
-        transform: posStyle.transform || `translateY(${translateY}px)`,
-        backgroundColor: COLORS.white,
-        padding: '20px 35px',
-        borderRadius: 12,
-        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-        ...style,
+        transform: `translateY(${translateY}px)`,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        padding: '30px 50px',
+        borderRadius: 16,
+        boxShadow: '0 15px 50px rgba(0,0,0,0.4)',
+        minWidth: 280,
+        backdropFilter: 'blur(10px)',
       }}
     >
       {children}
@@ -110,24 +149,37 @@ const InfoCard = ({ children, delay = 0, position = 'bottom-left', style = {} })
 };
 
 const CardLabel = ({ children }) => (
-  <div style={{ fontSize: 18, color: '#666', marginBottom: 5, fontFamily: 'Arial', fontWeight: 500 }}>
+  <div style={{ 
+    fontSize: 22, 
+    color: '#888', 
+    marginBottom: 8, 
+    fontFamily: 'Arial, sans-serif', 
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  }}>
     {children}
   </div>
 );
 
 const CardValue = ({ children, color = COLORS.primary }) => (
-  <div style={{ fontSize: 42, fontWeight: 'bold', color, fontFamily: 'Arial' }}>
+  <div style={{ 
+    fontSize: 52, 
+    fontWeight: 'bold', 
+    color, 
+    fontFamily: 'Arial, sans-serif' 
+  }}>
     {children}
   </div>
 );
 
 // ============================================
-// SCÈNE 1 : Photo + TYPE + RÉGION
+// SCÈNE 1 : Photo + TYPE + RÉGION (Ken Burns diagonal dynamique)
 // ============================================
 const Scene1 = ({ photo, type, region }) => {
   return (
     <AbsoluteFill>
-      <KenBurnsImage src={photo} direction="in" />
+      <KenBurnsImage src={photo} direction="diagonal" />
 
       {/* Badge TYPE en haut */}
       <InfoCard delay={10} position="top-left">
@@ -136,7 +188,7 @@ const Scene1 = ({ photo, type, region }) => {
       </InfoCard>
 
       {/* Badge RÉGION en bas */}
-      <InfoCard delay={25} position="bottom-right">
+      <InfoCard delay={30} position="bottom-right">
         <CardLabel>Localisation</CardLabel>
         <CardValue color={COLORS.accent}>{region}</CardValue>
       </InfoCard>
@@ -145,7 +197,7 @@ const Scene1 = ({ photo, type, region }) => {
 };
 
 // ============================================
-// SCÈNE 2 : Photo + PRIX + SURFACE
+// SCÈNE 2 : Photo + PRIX + SURFACE (Panoramique rapide)
 // ============================================
 const Scene2 = ({ photo, prix, surface }) => {
   const formatPrix = (p) => {
@@ -154,7 +206,7 @@ const Scene2 = ({ photo, prix, surface }) => {
 
   return (
     <AbsoluteFill>
-      <KenBurnsImage src={photo} direction="left" />
+      <KenBurnsImage src={photo} direction="panoramic" />
 
       {/* Badge PRIX */}
       <InfoCard delay={10} position="top-right">
@@ -163,7 +215,7 @@ const Scene2 = ({ photo, prix, surface }) => {
       </InfoCard>
 
       {/* Badge SURFACE */}
-      <InfoCard delay={25} position="bottom-left">
+      <InfoCard delay={30} position="bottom-left">
         <CardLabel>Surface</CardLabel>
         <CardValue>{surface} m²</CardValue>
       </InfoCard>
@@ -172,58 +224,103 @@ const Scene2 = ({ photo, prix, surface }) => {
 };
 
 // ============================================
-// SCÈNE 3 : Split horizontal (2 photos)
+// SCÈNE 3 : Split horizontal FIXÉ (2 photos vraiment séparées)
 // ============================================
 const Scene3 = ({ photo1, photo2 }) => {
   const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
 
-  const clipTop = interpolate(frame, [0, 20], [100, 50], {
+  // Animation d'entrée
+  const slideIn = interpolate(frame, [0, 25], [100, 0], {
     extrapolateRight: 'clamp',
   });
 
-  const clipBottom = interpolate(frame, [10, 30], [100, 50], {
+  // Ken Burns pour chaque moitié
+  const scale1 = interpolate(frame, [0, durationInFrames], [1.1, 1.25], {
+    extrapolateRight: 'clamp',
+  });
+  const translateX1 = interpolate(frame, [0, durationInFrames], [-3, 3], {
+    extrapolateRight: 'clamp',
+  });
+
+  const scale2 = interpolate(frame, [0, durationInFrames], [1.25, 1.1], {
+    extrapolateRight: 'clamp',
+  });
+  const translateX2 = interpolate(frame, [0, durationInFrames], [3, -3], {
     extrapolateRight: 'clamp',
   });
 
   return (
-    <AbsoluteFill>
-      {/* Photo du haut */}
+    <AbsoluteFill style={{ backgroundColor: COLORS.primary }}>
+      {/* Photo du HAUT - Moitié supérieure */}
       <div style={{ 
         position: 'absolute', 
         top: 0, 
         left: 0, 
         width: '100%', 
-        height: '50%',
+        height: 'calc(50% - 3px)',
         overflow: 'hidden',
-        clipPath: `inset(0 0 ${100 - clipTop}% 0)`,
+        transform: `translateY(-${slideIn}%)`,
       }}>
-        <KenBurnsImage src={photo1} direction="right" style={{ height: '200%' }} />
+        <Img
+          src={photo1}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transform: `scale(${scale1}) translateX(${translateX1}%)`,
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: COLORS.overlay,
+        }} />
       </div>
 
-      {/* Photo du bas */}
-      <div style={{ 
-        position: 'absolute', 
-        bottom: 0, 
-        left: 0, 
-        width: '100%', 
-        height: '50%',
-        overflow: 'hidden',
-        clipPath: `inset(${100 - clipBottom}% 0 0 0)`,
-      }}>
-        <KenBurnsImage src={photo2} direction="upLeft" style={{ height: '200%' }} />
-      </div>
-
-      {/* Ligne de séparation */}
+      {/* Ligne de séparation centrale */}
       <div style={{
         position: 'absolute',
         top: '50%',
         left: 0,
         width: '100%',
-        height: 4,
+        height: 6,
         backgroundColor: COLORS.white,
         transform: 'translateY(-50%)',
-        opacity: interpolate(frame, [25, 35], [0, 1], { extrapolateRight: 'clamp' }),
+        zIndex: 10,
       }} />
+
+      {/* Photo du BAS - Moitié inférieure */}
+      <div style={{ 
+        position: 'absolute', 
+        bottom: 0, 
+        left: 0, 
+        width: '100%', 
+        height: 'calc(50% - 3px)',
+        overflow: 'hidden',
+        transform: `translateY(${slideIn}%)`,
+      }}>
+        <Img
+          src={photo2}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transform: `scale(${scale2}) translateX(${translateX2}%)`,
+          }}
+        />
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: COLORS.overlay,
+        }} />
+      </div>
     </AbsoluteFill>
   );
 };
@@ -237,18 +334,18 @@ const Scene4 = ({ photo, email, telephone }) => {
       <KenBurnsImage src={photo} direction="out" />
 
       {/* Titre "Contactez-nous" */}
-      <InfoCard delay={5} position="top-left" style={{ backgroundColor: COLORS.accent }}>
-        <CardValue color={COLORS.white}>Contactez-nous</CardValue>
+      <InfoCard delay={5} position="top-left">
+        <CardValue color={COLORS.accent}>Contactez-nous</CardValue>
       </InfoCard>
 
       {/* EMAIL */}
-      <InfoCard delay={20} position="bottom-left">
+      <InfoCard delay={25} position="bottom-left">
         <CardLabel>Email</CardLabel>
-        <CardValue style={{ fontSize: 28 }}>{email}</CardValue>
+        <CardValue style={{ fontSize: 32 }}>{email}</CardValue>
       </InfoCard>
 
       {/* TÉLÉPHONE */}
-      <InfoCard delay={35} position="bottom-right">
+      <InfoCard delay={40} position="bottom-right">
         <CardLabel>Téléphone</CardLabel>
         <CardValue color={COLORS.accent}>{telephone}</CardValue>
       </InfoCard>
