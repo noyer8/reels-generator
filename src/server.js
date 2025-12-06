@@ -78,6 +78,7 @@ app.post('/generate-reel', async (req, res) => {
       type,
       email,
       telephone,
+      template = 'default', // 'default' ou 'blur'
     } = req.body;
 
     // Validation basique
@@ -88,7 +89,20 @@ app.post('/generate-reel', async (req, res) => {
       });
     }
 
+    // Valider le template
+    const validTemplates = ['default', 'blur'];
+    if (!validTemplates.includes(template)) {
+      return res.status(400).json({
+        success: false,
+        error: `Template invalide. Utilisez: ${validTemplates.join(', ')}`,
+      });
+    }
+
+    // Sélectionner l'ID de composition selon le template
+    const compositionId = template === 'blur' ? 'ReelImmobilierBlur' : 'ReelImmobilier';
+
     console.log('🎬 Génération du reel...');
+    console.log(`   Template: ${template}`);
     console.log(`   Type: ${type}`);
     console.log(`   Région: ${region}`);
     console.log(`   Prix: ${prix}€`);
@@ -96,7 +110,7 @@ app.post('/generate-reel', async (req, res) => {
     // Sélectionner la composition
     const composition = await selectComposition({
       serveUrl: bundled,
-      id: 'ReelImmobilier',
+      id: compositionId,
       inputProps: {
         photos,
         prix,
@@ -171,10 +185,14 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     name: 'NOYER Reels Generator',
-    version: '1.0.0',
+    version: '1.1.0',
     endpoints: {
       'POST /generate-reel': 'Génère un reel immobilier',
       'GET /health': 'Vérifie l\'état du service',
+    },
+    templates: {
+      default: 'Photos en plein écran (crop pour remplir)',
+      blur: 'Photos en paysage avec fond flou esthétique',
     },
     example: {
       photos: ['url1', 'url2', 'url3', 'url4', 'url5'],
@@ -184,6 +202,7 @@ app.get('/', (req, res) => {
       type: 'Appartement',
       email: 'contact@agence.fr',
       telephone: '04 00 00 00 00',
+      template: 'blur', // 'default' ou 'blur'
     },
   });
 });
